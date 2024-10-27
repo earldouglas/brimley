@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+  <head>
+    <title>Beetus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      td, input {
+        font-size: 18pt;
+      }
+      div.logo {
+        text-align: center;
+        margin-bottom: 2em;
+      }
+      div.logo span {
+        writing-mode: vertical-lr;
+        font-size: 128pt;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="logo"><span>{</span></div>
+
+    <form method="GET">
+      <table align="center">
+        <tr>
+          <td align="right">
+            <label for="c">Carbs:</label>
+          </td>
+          <td>
+            <input type="number" placeholder="0" id="c" name="c" style="width: 8ex;" />
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label for="g">Blood glucose:</label>
+          </td>
+          <td>
+            <input type="number" placeholder="0" id="g" name="g" style="width: 8ex;" />
+          </td>
+        </tr>
+        <tr height="20">
+          <td colspan="2"></td>
+        </tr>
+        <tr>
+          <td align="right">
+            Date calculated:
+          </td>
+          <td>
+            <span id="d"></span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            Time calculated:
+          </td>
+          <td>
+            <span id="t"></span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            Insulin for carbs:
+          </td>
+          <td>
+            <span id="cu"></span> units
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            Insulin for blood sugar:
+          </td>
+          <td>
+            <span id="gu"></span> units
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <b>Total insulin dose:</b>
+          </td>
+          <td>
+            <b><span id="u"></span> units</b>
+          </td>
+        </tr>
+      </table>
+    </form>
+    <script>
+      function round(sum) {
+        var whole = Math.trunc(sum);
+        var remainder = sum - whole;
+
+        var round;
+
+        if (remainder <= 0.2) {
+          round = 0;
+        } else if (remainder < 0.8) {
+          round = 0.5;
+        } else {
+          round = 1;
+        }
+
+        return Math.max(0, whole + round);
+      }
+
+      function bloodGlucoseUnits(bloodGlucose) {
+        var sugarCorrection = (bloodGlucose - 150) / 100;
+        return Math.max(0, sugarCorrection.toFixed(2));
+      }
+
+      function carbsUnits(carbs) {
+        var carbsCorrection = carbs / 50;
+        return Math.max(0, carbsCorrection.toFixed(2));
+      }
+
+      function units(bloodGlucose, carbs) {
+        var sugarCorrection = (bloodGlucose - 150) / 100;
+        var carbsCorrection = carbs / 50;
+        var sum = sugarCorrection + carbsCorrection;
+        return round(sum);
+      }
+
+      var g = document.getElementById("g");
+      var c = document.getElementById("c");
+
+      var t = document.getElementById("t");
+      var cu = document.getElementById("cu");
+      var gu = document.getElementById("gu");
+      var u = document.getElementById("u");
+
+      function go() {
+
+        var now = new Date();
+
+        d.innerHTML =
+          now.toLocaleString(
+            "en-us",
+            {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            }
+          );
+
+        t.innerHTML =
+          now.toLocaleTimeString(
+            "en-us",
+            {
+              hour: "2-digit",
+              minute: "2-digit",
+            }
+          );
+
+        cu.innerHTML =
+          carbsUnits(c.value);
+        gu.innerHTML =
+          bloodGlucoseUnits(g.value);
+        u.innerHTML =
+          units(g.value, c.value);
+      }
+
+      g.onchange = go;
+      g.onkeypress = go;
+      g.onpaste = go;
+      g.oninput = go;
+
+      c.onchange = go;
+      c.onkeypress = go;
+      c.onpaste = go;
+      c.oninput = go;
+
+      go();
+    </script>
+  </body>
+</html>

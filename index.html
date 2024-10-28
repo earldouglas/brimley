@@ -160,11 +160,6 @@
 
       function go() {
 
-        carbsRatio.value = carbsRatio.value || carbsRatio.placeholder;
-
-        bloodGlucoseOffset.value = bloodGlucoseOffset.value || bloodGlucoseOffset.placeholder;
-        bloodGlucoseRatio.value = bloodGlucoseRatio.value || bloodGlucoseRatio.placeholder;
-
         var now = new Date();
 
         theDate.innerHTML =
@@ -186,10 +181,26 @@
             }
           );
 
-        var carbsCorrection = carbs.value / carbsRatio.value;
+        var carbsRatioValue =
+          carbsRatio.value || carbsRatio.placeholder;
+
+        var carbsValue =
+          carbs.value || carbs.placeholder;
+
+        var bloodGlucoseValue =
+          bloodGlucose.value || bloodGlucose.placeholder;
+
+        var bloodGlucoseOffsetValue =
+          bloodGlucoseOffset.value || bloodGlucoseOffset.placeholder;
+
+        var bloodGlucoseRatioValue =
+          bloodGlucoseRatio.value || bloodGlucoseRatio.placeholder;
+
+        var carbsCorrection = carbsValue / carbsRatioValue;
         carbsUnits.innerHTML = Math.max(0, carbsCorrection.toFixed(2));
 
-        var sugarCorrection = (bloodGlucose.value - bloodGlucoseOffset.value) / bloodGlucoseRatio.value;
+        var sugarCorrection =
+          (bloodGlucoseValue - bloodGlucoseOffsetValue) / bloodGlucoseRatioValue;
         bloodGlucoseUnits.innerHTML = Math.max(0, sugarCorrection.toFixed(2));
 
         var totalCorrection = round(sugarCorrection + carbsCorrection);

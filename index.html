@@ -5,11 +5,19 @@
     <title>Beetus</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      td, input {
+      body {
+        padding: 0 2ex;
         font-size: 16pt;
       }
-      td {
+      input {
+        font-size: 16pt;
+        font-family: monospace;
+        width: 5ch;
+      }
+      div.row {
         white-space: nowrap;
+        text-align: center;
+        margin-bottom: 0.5em;
       }
       div.logo {
         text-align: center;
@@ -19,6 +27,9 @@
         writing-mode: vertical-lr;
         font-size: 128pt;
       }
+      hr {
+        margin: 1em 0;
+      }
     </style>
   </head>
 
@@ -27,43 +38,27 @@
     <div class="logo"><span>{</span></div>
 
     <form method="GET">
+      <div class="row">
+        1 unit for every
+        <input type="number" placeholder="40" id="carbsRatio" name="carbsRatio" />
+        carbs
+      </div>
+      <div class="row">
+        (blood glucose -
+        <input type="number" placeholder="150" id="bloodGlucoseOffset" name="bloodGlucoseOffset" />)
+        / 
+        <input type="number" placeholder="100" id="bloodGlucoseRatio" name="bloodGlucoseRatio" />
+      </div>
+
+      <hr>
+
       <table align="center">
-        <tr>
-          <td align="right">
-            <label for="carbsRatio">Carbs ratio:</label>
-          </td>
-          <td>
-            1 / <input type="number" placeholder="40" id="carbsRatio" name="carbsRatio" style="width: 8ex;" />
-          </td>
-        </tr>
-        <tr height="20">
-          <td colspan="2"></td>
-        </tr>
-        <tr>
-          <td align="right">
-            <label for="bloodGlucoseOffset">Blood glucose offset:</label>
-          </td>
-          <td>
-            <input type="number" placeholder="150" id="bloodGlucoseOffset" name="bloodGlucoseOffset" style="width: 8ex;" />
-          </td>
-        </tr>
-        <tr>
-          <td align="right">
-            <label for="bloodGlucoseRatio">Blood glucose ratio:</label>
-          </td>
-          <td>
-            1 / <input type="number" placeholder="100" id="bloodGlucoseRatio" name="bloodGlucoseRatio" style="width: 8ex;" />
-          </td>
-        </tr>
-        <tr height="20">
-          <td colspan="2"><hr></td>
-        </tr>
         <tr>
           <td align="right">
             <label for="c">Carbs:</label>
           </td>
           <td>
-            <input type="number" placeholder="0" id="carbs" name="carbs" style="width: 8ex;" />
+            <input type="number" placeholder="0" id="carbs" name="carbs" />
           </td>
         </tr>
         <tr>
@@ -71,12 +66,14 @@
             <label for="g">Blood glucose:</label>
           </td>
           <td>
-            <input type="number" placeholder="0" id="bloodGlucose" name="bloodGlucose" style="width: 8ex;" />
+            <input type="number" placeholder="0" id="bloodGlucose" name="bloodGlucose" />
           </td>
         </tr>
-        <tr height="20">
-          <td colspan="2"><hr></td>
-        </tr>
+      </table>
+
+      <hr>
+
+      <table align="center">
         <tr>
           <td align="right">
             Date calculated:
@@ -112,9 +109,11 @@
             <span id="bloodGlucoseUnits"></span> units
           </td>
         </tr>
-        <tr height="20">
-          <td colspan="2"><hr></td>
-        </tr>
+      </table>
+
+      <hr>
+
+      <table align="center">
         <tr>
           <td align="right">
             <b>Total insulin dose:</b>
@@ -124,7 +123,9 @@
           </td>
         </tr>
       </table>
+
     </form>
+
     <script>
       function round(sum) {
         var whole = Math.trunc(sum);

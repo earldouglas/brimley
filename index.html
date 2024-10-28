@@ -40,7 +40,7 @@
 
     <div class="logo"><span>{</span></div>
 
-    <form method="GET">
+    <form method="GET" onsubmit="function() { return false; }">
       <div class="row">
         1 unit for every
         <input type="number" placeholder="40" id="carbsRatio" name="carbsRatio" />
@@ -73,61 +73,62 @@
           </td>
         </tr>
       </table>
-
-      <hr>
-
-      <table align="center">
-        <tr>
-          <td align="right">
-            Date calculated:
-          </td>
-          <td>
-            <span id="date"></span>
-          </td>
-        </tr>
-        <tr>
-          <td align="right">
-            Time calculated:
-          </td>
-          <td>
-            <span id="time"></span>
-          </td>
-        </tr>
-        <tr height="20">
-          <td colspan="2"></td>
-        </tr>
-        <tr>
-          <td align="right">
-            Insulin for carbs:
-          </td>
-          <td>
-            <span id="carbsUnits"></span> units
-          </td>
-        </tr>
-        <tr>
-          <td align="right">
-            Insulin for blood sugar:
-          </td>
-          <td>
-            <span id="bloodGlucoseUnits"></span> units
-          </td>
-        </tr>
-      </table>
-
-      <hr>
-
-      <table align="center">
-        <tr>
-          <td align="right">
-            <b>Total insulin dose:</b>
-          </td>
-          <td>
-            <b><span id="total"></span> units</b>
-          </td>
-        </tr>
-      </table>
-
     </form>
+
+    <hr>
+
+    <table align="center">
+      <tr>
+        <td align="right">
+          Date calculated:
+        </td>
+        <td>
+          <span id="date"></span>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          Time calculated:
+        </td>
+        <td>
+          <span id="time"></span>
+        </td>
+      </tr>
+      <tr height="20">
+        <td colspan="2"></td>
+      </tr>
+      <tr>
+        <td align="right">
+          Insulin for carbs:
+        </td>
+        <td>
+          <span id="carbsUnits"></span> units
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          Insulin for blood sugar:
+        </td>
+        <td>
+          <span id="bloodGlucoseUnits"></span> units
+        </td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <div class="row">
+      <b>
+        Total insulin dose:
+        <span id="total"></span> units
+      </b>
+    </div>
+
+    <hr>
+
+    <div class="row">
+      <button onclick="copyToClipboard()">copy to clipboard</button>
+    </div>
 
     <script>
       function round(sum) {
@@ -155,17 +156,26 @@
       var bloodGlucose = document.getElementById("bloodGlucose");
       var carbs = document.getElementById("carbs");
 
-      var theDate = document.getElementById("date");
-      var theTime = document.getElementById("time");
+      var dateElement = document.getElementById("date");
+      var timeElement = document.getElementById("time");
       var carbsUnits = document.getElementById("carbsUnits");
       var bloodGlucoseUnits = document.getElementById("bloodGlucoseUnits");
       var total = document.getElementById("total");
+
+      var clipboard = [];
+
+      function copyToClipboard() {
+        var type = "text/plain";
+        var blob = new Blob(clipboard, { type });
+        var data = [new ClipboardItem({ [type]: blob })];
+        navigator.clipboard.write(data);
+      }
 
       function go() {
 
         var now = new Date();
 
-        theDate.innerHTML =
+        var theDate =
           now.toLocaleString(
             "en-us",
             {
@@ -175,7 +185,7 @@
             }
           );
 
-        theTime.innerHTML =
+        var theTime =
           now.toLocaleTimeString(
             "en-us",
             {
@@ -183,6 +193,9 @@
               minute: "2-digit",
             }
           );
+
+        dateElement.innerHTML = theDate;
+        timeElement.innerHTML = theTime;
 
         var carbsRatioValue =
           carbsRatio.value || carbsRatio.placeholder;
@@ -202,12 +215,25 @@
         var carbsCorrection = carbsValue / carbsRatioValue;
         carbsUnits.innerHTML = Math.max(0, carbsCorrection.toFixed(2));
 
-        var sugarCorrection =
+        var bloodGlucoseCorrection =
           (bloodGlucoseValue - bloodGlucoseOffsetValue) / bloodGlucoseRatioValue;
-        bloodGlucoseUnits.innerHTML = Math.max(0, sugarCorrection.toFixed(2));
+        bloodGlucoseUnits.innerHTML = Math.max(0, bloodGlucoseCorrection.toFixed(2));
 
-        var totalCorrection = round(sugarCorrection + carbsCorrection);
+        var totalCorrection = round(bloodGlucoseCorrection + carbsCorrection);
         total.innerHTML = totalCorrection;
+
+        clipboard = [
+          `date: ${theDate}`,
+          `time: ${theTime}`,
+          `carbs ratio: ${carbsRatioValue}`,
+          `blood glucose offset: ${bloodGlucoseOffsetValue}`,
+          `blood glucose ratio: ${bloodGlucoseRatioValue}`,
+          `carbs: ${carbsValue}`,
+          `blood glucose: ${bloodGlucoseValue}`,
+          `insulin for carbs: ${carbsCorrection}`,
+          `insulin for blood sugar: ${bloodGlucoseCorrection}`,
+          `total insulin dose: ${totalCorrection}`,
+        ].map((x) => x + "\n");
       }
 
       [

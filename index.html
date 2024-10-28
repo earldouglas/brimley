@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       td, input {
-        font-size: 18pt;
+        font-size: 16pt;
+      }
+      td {
+        white-space: nowrap;
       }
       div.logo {
         text-align: center;
@@ -27,18 +30,10 @@
       <table align="center">
         <tr>
           <td align="right">
-            <label for="c">Carbs:</label>
+            <label for="carbsRatio">Carbs ratio:</label>
           </td>
           <td>
-            <input type="number" placeholder="0" id="c" name="c" style="width: 8ex;" />
-          </td>
-        </tr>
-        <tr>
-          <td align="right">
-            <label for="g">Blood glucose:</label>
-          </td>
-          <td>
-            <input type="number" placeholder="0" id="g" name="g" style="width: 8ex;" />
+            1 / <input type="number" placeholder="40" id="carbsRatio" name="carbsRatio" style="width: 8ex;" />
           </td>
         </tr>
         <tr height="20">
@@ -46,10 +41,48 @@
         </tr>
         <tr>
           <td align="right">
+            <label for="bloodGlucoseOffset">Blood glucose offset:</label>
+          </td>
+          <td>
+            <input type="number" placeholder="150" id="bloodGlucoseOffset" name="bloodGlucoseOffset" style="width: 8ex;" />
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label for="bloodGlucoseRatio">Blood glucose ratio:</label>
+          </td>
+          <td>
+            1 / <input type="number" placeholder="100" id="bloodGlucoseRatio" name="bloodGlucoseRatio" style="width: 8ex;" />
+          </td>
+        </tr>
+        <tr height="20">
+          <td colspan="2"><hr></td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label for="c">Carbs:</label>
+          </td>
+          <td>
+            <input type="number" placeholder="0" id="carbs" name="carbs" style="width: 8ex;" />
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <label for="g">Blood glucose:</label>
+          </td>
+          <td>
+            <input type="number" placeholder="0" id="bloodGlucose" name="bloodGlucose" style="width: 8ex;" />
+          </td>
+        </tr>
+        <tr height="20">
+          <td colspan="2"><hr></td>
+        </tr>
+        <tr>
+          <td align="right">
             Date calculated:
           </td>
           <td>
-            <span id="d"></span>
+            <span id="date"></span>
           </td>
         </tr>
         <tr>
@@ -57,15 +90,18 @@
             Time calculated:
           </td>
           <td>
-            <span id="t"></span>
+            <span id="time"></span>
           </td>
+        </tr>
+        <tr height="20">
+          <td colspan="2"></td>
         </tr>
         <tr>
           <td align="right">
             Insulin for carbs:
           </td>
           <td>
-            <span id="cu"></span> units
+            <span id="carbsUnits"></span> units
           </td>
         </tr>
         <tr>
@@ -73,15 +109,18 @@
             Insulin for blood sugar:
           </td>
           <td>
-            <span id="gu"></span> units
+            <span id="bloodGlucoseUnits"></span> units
           </td>
+        </tr>
+        <tr height="20">
+          <td colspan="2"><hr></td>
         </tr>
         <tr>
           <td align="right">
             <b>Total insulin dose:</b>
           </td>
           <td>
-            <b><span id="u"></span> units</b>
+            <b><span id="total"></span> units</b>
           </td>
         </tr>
       </table>
@@ -104,36 +143,30 @@
         return Math.max(0, whole + round);
       }
 
-      function bloodGlucoseUnits(bloodGlucose) {
-        var sugarCorrection = (bloodGlucose - 150) / 100;
-        return Math.max(0, sugarCorrection.toFixed(2));
-      }
+      var bloodGlucoseOffset = document.getElementById("bloodGlucoseOffset");
+      var bloodGlucoseRatio = document.getElementById("bloodGlucoseRatio");
 
-      function carbsUnits(carbs) {
-        var carbsCorrection = carbs / 50;
-        return Math.max(0, carbsCorrection.toFixed(2));
-      }
+      var carbsRatio = document.getElementById("carbsRatio");
 
-      function units(bloodGlucose, carbs) {
-        var sugarCorrection = (bloodGlucose - 150) / 100;
-        var carbsCorrection = carbs / 50;
-        var sum = sugarCorrection + carbsCorrection;
-        return round(sum);
-      }
+      var bloodGlucose = document.getElementById("bloodGlucose");
+      var carbs = document.getElementById("carbs");
 
-      var g = document.getElementById("g");
-      var c = document.getElementById("c");
-
-      var t = document.getElementById("t");
-      var cu = document.getElementById("cu");
-      var gu = document.getElementById("gu");
-      var u = document.getElementById("u");
+      var theDate = document.getElementById("date");
+      var theTime = document.getElementById("time");
+      var carbsUnits = document.getElementById("carbsUnits");
+      var bloodGlucoseUnits = document.getElementById("bloodGlucoseUnits");
+      var total = document.getElementById("total");
 
       function go() {
 
+        carbsRatio.value = carbsRatio.value || carbsRatio.placeholder;
+
+        bloodGlucoseOffset.value = bloodGlucoseOffset.value || bloodGlucoseOffset.placeholder;
+        bloodGlucoseRatio.value = bloodGlucoseRatio.value || bloodGlucoseRatio.placeholder;
+
         var now = new Date();
 
-        d.innerHTML =
+        theDate.innerHTML =
           now.toLocaleString(
             "en-us",
             {
@@ -143,7 +176,7 @@
             }
           );
 
-        t.innerHTML =
+        theTime.innerHTML =
           now.toLocaleTimeString(
             "en-us",
             {
@@ -152,23 +185,30 @@
             }
           );
 
-        cu.innerHTML =
-          carbsUnits(c.value);
-        gu.innerHTML =
-          bloodGlucoseUnits(g.value);
-        u.innerHTML =
-          units(g.value, c.value);
+        var carbsCorrection = carbs.value / carbsRatio.value;
+        carbsUnits.innerHTML = Math.max(0, carbsCorrection.toFixed(2));
+
+        var sugarCorrection = (bloodGlucose.value - bloodGlucoseOffset.value) / bloodGlucoseRatio.value;
+        bloodGlucoseUnits.innerHTML = Math.max(0, sugarCorrection.toFixed(2));
+
+        var totalCorrection = round(sugarCorrection + carbsCorrection);
+        total.innerHTML = totalCorrection;
       }
 
-      g.onchange = go;
-      g.onkeypress = go;
-      g.onpaste = go;
-      g.oninput = go;
+      [
+        carbsRatio,
+        bloodGlucoseOffset,
+        bloodGlucoseRatio,
+        carbs,
+        bloodGlucose
+      ].forEach((x) => {
+          x.onchange = go;
+          x.onkeypress = go;
+          x.onpaste = go;
+          x.oninput = go;
+      });
 
-      c.onchange = go;
-      c.onkeypress = go;
-      c.onpaste = go;
-      c.oninput = go;
+      carbs.focus();
 
       go();
     </script>

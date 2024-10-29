@@ -127,7 +127,7 @@
     <hr>
 
     <div class="row">
-      <button onclick="copyToClipboard()">copy to clipboard</button>
+      <button id="copy">copy to clipboard</button>
     </div>
 
     <script>
@@ -162,16 +162,7 @@
       var bloodGlucoseUnits = document.getElementById("bloodGlucoseUnits");
       var total = document.getElementById("total");
 
-      var clipboard = [];
-
-      function copyToClipboard() {
-        var type = "text/plain";
-        var blob = new Blob(clipboard, { type });
-        var data = [new ClipboardItem({ [type]: blob })];
-        navigator.clipboard.write(data);
-      }
-
-      function go() {
+      function getCurrentDateAndTime() {
 
         var now = new Date();
 
@@ -194,8 +185,18 @@
             }
           );
 
-        dateElement.innerHTML = theDate;
-        timeElement.innerHTML = theTime;
+        return {
+          date: theDate,
+          time: theTime,
+        };
+      }
+
+      function go() {
+
+        var calculatedDateAndTime = getCurrentDateAndTime();
+
+        dateElement.innerHTML = calculatedDateAndTime.date;
+        timeElement.innerHTML = calculatedDateAndTime.time;
 
         var carbsRatioValue =
           carbsRatio.value || carbsRatio.placeholder;
@@ -222,9 +223,7 @@
         var totalCorrection = round(bloodGlucoseCorrection + carbsCorrection);
         total.innerHTML = totalCorrection;
 
-        clipboard = [
-          `date: ${theDate}`,
-          `time: ${theTime}`,
+        var clipboardData = [
           `carbs ratio: ${carbsRatioValue}`,
           `blood glucose offset: ${bloodGlucoseOffsetValue}`,
           `blood glucose ratio: ${bloodGlucoseRatioValue}`,
@@ -233,7 +232,31 @@
           `insulin for carbs: ${carbsCorrection}`,
           `insulin for blood sugar: ${bloodGlucoseCorrection}`,
           `total insulin dose: ${totalCorrection}`,
-        ].map((x) => x + "\n");
+          `calculated on: ${calculatedDateAndTime.date}`,
+          `calculated at: ${calculatedDateAndTime.time}`,
+        ];
+
+        document.getElementById('copy').onclick =
+          function () {
+
+            var copiedDateAndTime = getCurrentDateAndTime();
+
+            var dateAndTimeData = [
+              `copied on: ${copiedDateAndTime.date}`,
+              `copied at: ${copiedDateAndTime.time}`,
+            ];
+
+            var dataToCopy =
+              clipboardData
+                .concat(dateAndTimeData)
+                .map((x) => x + "\n");
+
+            var type = "text/plain";
+            var blob = new Blob(dataToCopy, { type });
+            var data = [new ClipboardItem({ [type]: blob })];
+
+            navigator.clipboard.write(data);
+          };
       }
 
       [

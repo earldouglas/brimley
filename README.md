@@ -1,1 +1,1 @@
-![beetus](beetus.png)
+![brimley](brimley.png)
